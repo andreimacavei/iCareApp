@@ -32,6 +32,7 @@
 //
 package com.microsoft.projectoxford.emotionsample;
 
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -42,6 +43,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.internal.widget.ContentFrameLayout;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -65,6 +67,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class RecognizeActivity extends ActionBarActivity {
 
@@ -89,7 +92,7 @@ public class RecognizeActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recognize);
-
+//
         if (client == null) {
             client = new EmotionServiceRestClient(getString(R.string.subscription_key));
         }
@@ -152,6 +155,26 @@ public class RecognizeActivity extends ActionBarActivity {
         startActivityForResult(intent, REQUEST_SELECT_IMAGE);
     }
 
+
+    public void rec(String path, ContentResolver c){
+
+        mImageUri =  Uri.parse(path);
+
+        mBitmap = ImageHelper.loadSizeLimitedBitmapFromUri(
+                mImageUri, c);
+        if (mBitmap != null) {
+            // Show the image on screen.
+            ImageView imageView = (ImageView) findViewById(R.id.selectedImage);
+            imageView.setImageBitmap(mBitmap);
+
+            // Add detection log.
+            Log.d("RecognizeActivity", "Image: " + mImageUri + " resized to " + mBitmap.getWidth()
+                    + "x" + mBitmap.getHeight());
+
+            doRecognize();
+        }
+    }
+
     // Called when image selection is done.
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -161,6 +184,7 @@ public class RecognizeActivity extends ActionBarActivity {
                 if (resultCode == RESULT_OK) {
                     // If image is selected successfully, set the image URI and bitmap.
                     mImageUri = data.getData();
+                    Log.d("AICI AICI ",mImageUri.toString());
 
                     mBitmap = ImageHelper.loadSizeLimitedBitmapFromUri(
                             mImageUri, getContentResolver());

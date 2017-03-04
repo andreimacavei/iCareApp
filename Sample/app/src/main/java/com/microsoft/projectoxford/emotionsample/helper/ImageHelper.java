@@ -41,7 +41,10 @@ import android.graphics.Rect;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -66,9 +69,11 @@ public class ImageHelper {
     public static Bitmap loadSizeLimitedBitmapFromUri(
             Uri imageUri,
             ContentResolver contentResolver) {
+
         try {
+
             // Load the image into InputStream.
-            InputStream imageInputStream = contentResolver.openInputStream(imageUri);
+            InputStream imageInputStream = new FileInputStream(new File(imageUri.toString()));
 
             // For saving memory, only decode the image meta and get the side length.
             BitmapFactory.Options options = new BitmapFactory.Options();
@@ -84,9 +89,8 @@ public class ImageHelper {
             options.inJustDecodeBounds = false;
             imageInputStream.close();
 
-
             // Load the bitmap and resize it to the expected size length
-            imageInputStream = contentResolver.openInputStream(imageUri);
+            imageInputStream = new FileInputStream(new File(imageUri.toString()));
             Bitmap bitmap = BitmapFactory.decodeStream(imageInputStream, outPadding, options);
             maxSideLength = bitmap.getWidth() > bitmap.getHeight()
                     ? bitmap.getWidth(): bitmap.getHeight();
