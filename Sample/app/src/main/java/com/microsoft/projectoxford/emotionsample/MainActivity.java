@@ -83,7 +83,7 @@ import static android.R.attr.mimeType;
 import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
 
 public class MainActivity extends ActionBarActivity {
-    private Camera mCamera;
+    public Camera mCamera;
     private CameraPreview mPreview;
     private static final String TAG = "MainActivity";
     public static final int MEDIA_TYPE_IMAGE = 1;
@@ -171,6 +171,7 @@ public class MainActivity extends ActionBarActivity {
                 fos.write(data);
                 fos.close();
                 rec(picturePath);
+                mCamera.startPreview();
 
             } catch (FileNotFoundException e) {
                 Log.d(TAG, "File not found: " + e.getMessage());
@@ -229,6 +230,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        releaseCamera();
     }
     private void releaseCamera(){
         if (mCamera != null){
@@ -307,9 +309,7 @@ public class MainActivity extends ActionBarActivity {
 
         mBitmap = ImageHelper.loadSizeLimitedBitmapFromUri(
                 mImageUri, getContentResolver());
-        Log.d("ACICI ",mImageUri.toString());
         if (mBitmap != null) {
-            Log.d("ACOLO ACOLO ",path);
 
             // Add detection log.
             Log.d("RecognizeActivity", "Image: " + mImageUri + " resized to " + mBitmap.getWidth()
