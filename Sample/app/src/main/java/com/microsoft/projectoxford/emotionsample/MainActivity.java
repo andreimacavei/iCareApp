@@ -33,29 +33,25 @@
 package com.microsoft.projectoxford.emotionsample;
 
 import android.app.AlertDialog;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -75,13 +71,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-
-import static android.R.attr.id;
-import static android.R.attr.logo;
-import static android.R.attr.mimeType;
-import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
 
 public class MainActivity extends ActionBarActivity {
     public Camera mCamera;
@@ -102,7 +95,7 @@ public class MainActivity extends ActionBarActivity {
     private Bitmap mBitmap;
 
     // The edit to show status and result.
-    private EditText mEditText;
+    private TextView mEditText;
 
     private EmotionServiceClient client;
 
@@ -222,6 +215,7 @@ public class MainActivity extends ActionBarActivity {
                     @Override
                     public void onClick(View v) {
                         // get an image from the camera
+                        mEditText.setText("");
                         mCamera.takePicture(null, null, mPicture);
                     }
                 }
@@ -232,7 +226,7 @@ public class MainActivity extends ActionBarActivity {
             client = new EmotionServiceRestClient(getString(R.string.subscription_key));
         }
 
-        mEditText = (EditText) findViewById(R.id.editTextResult);
+        mEditText = (TextView) findViewById(R.id.editResult);
     }
 
     @Override
@@ -282,12 +276,12 @@ public class MainActivity extends ActionBarActivity {
 
     public void doRecognize() {
 
-        // Do emotion detection using auto-detected faces.
-        try {
-            new MainActivity.doRequest(false).execute();
-        } catch (Exception e) {
-            mEditText.append("Error encountered. Exception is: " + e.toString());
-        }
+//        // Do emotion detection using auto-detected faces.
+//        try {
+//            new MainActivity.doRequest(false).execute();
+//        } catch (Exception e) {
+//            mEditText.append("Error encountered. Exception is: " + e.toString());
+//        }
 
         String faceSubscriptionKey = getString(R.string.faceSubscription_key);
         if (faceSubscriptionKey.equalsIgnoreCase("Please_add_the_face_subscription_key_here")) {
@@ -439,17 +433,17 @@ public class MainActivity extends ActionBarActivity {
             super.onPostExecute(result);
             // Display based on error existence
 
-            if (this.useFaceRectangles == false) {
-                mEditText.append("\n\nRecognizing emotions with auto-detected face rectangles...\n");
-            } else {
-                mEditText.append("\n\nRecognizing emotions with existing face rectangles from Face API...\n");
-            }
+//            if (this.useFaceRectangles == false) {
+//                mEditText.append("\n\nRecognizing emotions with auto-detected face rectangles...\n");
+//            } else {
+//                mEditText.append("\n\nRecognizing emotions with existing face rectangles from Face API...\n");
+//            }
             if (e != null) {
                 mEditText.setText("Error: " + e.getMessage());
                 this.e = null;
             } else {
                 if (result.size() == 0) {
-                    mEditText.append("No emotion detected :(");
+                    mEditText.append("Mai incearca :(!");
                 } else {
                     Integer count = 0;
                     // Covert bitmap to a mutable bitmap by copying it
@@ -461,17 +455,46 @@ public class MainActivity extends ActionBarActivity {
                     paint.setStrokeWidth(5);
                     paint.setColor(Color.RED);
 
+                    List<String> x = new ArrayList<>(Arrays.asList("Nervos",
+                            "Dispret",
+                            "Desgust",
+                            "Frica",
+                            "Fericire",
+                            "Neutru",
+                            "Trist",
+                            "Surprins"));
+
+                    List<Double> scors;
+                    int index=0;
+
                     for (RecognizeResult r : result) {
-                        mEditText.append(String.format("\nFace #%1$d \n", count));
-                        mEditText.append(String.format("\t anger: %1$.5f\n", r.scores.anger));
-                        mEditText.append(String.format("\t contempt: %1$.5f\n", r.scores.contempt));
-                        mEditText.append(String.format("\t disgust: %1$.5f\n", r.scores.disgust));
-                        mEditText.append(String.format("\t fear: %1$.5f\n", r.scores.fear));
-                        mEditText.append(String.format("\t happiness: %1$.5f\n", r.scores.happiness));
-                        mEditText.append(String.format("\t neutral: %1$.5f\n", r.scores.neutral));
-                        mEditText.append(String.format("\t sadness: %1$.5f\n", r.scores.sadness));
-                        mEditText.append(String.format("\t surprise: %1$.5f\n", r.scores.surprise));
-                        mEditText.append(String.format("\t face rectangle: %d, %d, %d, %d", r.faceRectangle.left, r.faceRectangle.top, r.faceRectangle.width, r.faceRectangle.height));
+                        scors = new ArrayList<>(Arrays.asList(r.scores.anger,
+                                r.scores.contempt,
+                                r.scores.disgust,
+                                r.scores.fear,
+                                r.scores.happiness,
+                                r.scores.neutral,
+                                r.scores.sadness,
+                                r.scores.surprise));
+
+                        double max=0;
+                        for(double s : scors){
+                            if(s>max){
+                                max=s;
+                                index=scors.indexOf(s);
+                            }
+                        }
+
+//                        mEditText.append(String.format("\nFace #%1$d \n", count));
+//                        mEditText.append(String.format("\t anger: %1$.5f\n", r.scores.anger));
+//                        mEditText.append(String.format("\t contempt: %1$.5f\n", r.scores.contempt));
+//                        mEditText.append(String.format("\t disgust: %1$.5f\n", r.scores.disgust));
+//                        mEditText.append(String.format("\t fear: %1$.5f\n", r.scores.fear));
+//                        mEditText.append(String.format("\t happiness: %1$.5f\n", r.scores.happiness));
+//                        mEditText.append(String.format("\t neutral: %1$.5f\n", r.scores.neutral));
+//                        mEditText.append(String.format("\t sadness: %1$.5f\n", r.scores.sadness));
+//                        mEditText.append(String.format("\t surprise: %1$.5f\n", r.scores.surprise));
+//                        mEditText.append(String.format("\t face rectangle: %d, %d, %d, %d", r.faceRectangle.left, r.faceRectangle.top, r.faceRectangle.width, r.faceRectangle.height));
                         faceCanvas.drawRect(r.faceRectangle.left,
                                 r.faceRectangle.top,
                                 r.faceRectangle.left + r.faceRectangle.width,
@@ -479,8 +502,9 @@ public class MainActivity extends ActionBarActivity {
                                 paint);
                         count++;
                     }
+                    mEditText.append(x.get(index));
+
                 }
-                mEditText.setSelection(0);
             }
         }
     }
