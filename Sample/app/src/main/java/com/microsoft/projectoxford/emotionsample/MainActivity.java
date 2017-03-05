@@ -457,9 +457,9 @@ public class MainActivity extends ActionBarActivity {
 
                     List<String> x = new ArrayList<>(Arrays.asList("Nervos",
                             "Dispret",
-                            "Desgust",
+                            "Desgustat",
                             "Frica",
-                            "Fericire",
+                            "Fericit",
                             "Neutru",
                             "Trist",
                             "Surprins"));
