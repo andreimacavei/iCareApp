@@ -51,6 +51,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -167,10 +168,17 @@ public class MainActivity extends ActionBarActivity {
 
 
             try {
-                FileOutputStream fos = new FileOutputStream(pictureFile);
+                File file = File.createTempFile("IMG_", ".jpg", storageDir);
+                mUriPhotoTaken = Uri.fromFile(file);
+                Log.d("dasdjsaa",mUriPhotoTaken.toString().substring(7));
+                File f = new File(mUriPhotoTaken.toString().substring(7));
+                if(!f.exists())
+                    f.createNewFile();
+
+                FileOutputStream fos = new FileOutputStream(mUriPhotoTaken.toString().substring(7));
                 fos.write(data);
                 fos.close();
-                rec(picturePath);
+                rec(mUriPhotoTaken);
                 mCamera.startPreview();
 
             } catch (FileNotFoundException e) {
@@ -196,7 +204,7 @@ public class MainActivity extends ActionBarActivity {
 
         /** A safe way to get an instance of the Camera object. */
         try {
-            mCamera = Camera.open(); // attempt to get a Camera instance
+            mCamera = Camera.open(1); // attempt to get a Camera instance
         }
         catch (Exception e){
             // Camera is not available (in use or does not exist)
@@ -304,49 +312,17 @@ public class MainActivity extends ActionBarActivity {
     }
 
 
-    public void rec(String path){
-        mImageUri =  Uri.parse(path);
+    public void rec(Uri path){
+        mImageUri =  path;
 
         mBitmap = ImageHelper.loadSizeLimitedBitmapFromUri(
                 mImageUri, getContentResolver());
         if (mBitmap != null) {
-
             // Add detection log.
             Log.d("RecognizeActivity", "Image: " + mImageUri + " resized to " + mBitmap.getWidth()
                     + "x" + mBitmap.getHeight());
 
             doRecognize();
-        }
-    }
-
-    // Called when image selection is done.
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d("RecognizeActivity", "onActivityResult");
-        switch (requestCode) {
-            case REQUEST_SELECT_IMAGE:
-                if (resultCode == RESULT_OK) {
-                    // If image is selected successfully, set the image URI and bitmap.
-                    mImageUri = data.getData();
-                    Log.d("AICI AICI ",mImageUri.toString());
-
-                    mBitmap = ImageHelper.loadSizeLimitedBitmapFromUri(
-                            mImageUri, getContentResolver());
-                    if (mBitmap != null) {
-                        // Show the image on screen.
-                        ImageView imageView = (ImageView) findViewById(R.id.selectedImage);
-                        imageView.setImageBitmap(mBitmap);
-
-                        // Add detection log.
-                        Log.d("RecognizeActivity", "Image: " + mImageUri + " resized to " + mBitmap.getWidth()
-                                + "x" + mBitmap.getHeight());
-
-                        doRecognize();
-                    }
-                }
-                break;
-            default:
-                break;
         }
     }
 
@@ -359,6 +335,7 @@ public class MainActivity extends ActionBarActivity {
         // Put the image into an input stream for detection.
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, output);
+
         ByteArrayInputStream inputStream = new ByteArrayInputStream(output.toByteArray());
 
         long startTime = System.currentTimeMillis();
@@ -502,8 +479,6 @@ public class MainActivity extends ActionBarActivity {
                                 paint);
                         count++;
                     }
-                    ImageView imageView = (ImageView) findViewById(R.id.selectedImage);
-                    imageView.setImageDrawable(new BitmapDrawable(getResources(), mBitmap));
                 }
                 mEditText.setSelection(0);
             }

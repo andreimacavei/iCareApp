@@ -38,10 +38,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.widget.ImageView;
+
+import com.microsoft.projectoxford.emotionsample.R;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -73,7 +77,7 @@ public class ImageHelper {
         try {
 
             // Load the image into InputStream.
-            InputStream imageInputStream = new FileInputStream(new File(imageUri.toString()));
+            InputStream imageInputStream = contentResolver.openInputStream(imageUri);
 
             // For saving memory, only decode the image meta and get the side length.
             BitmapFactory.Options options = new BitmapFactory.Options();
@@ -90,10 +94,11 @@ public class ImageHelper {
             imageInputStream.close();
 
             // Load the bitmap and resize it to the expected size length
-            imageInputStream = new FileInputStream(new File(imageUri.toString()));
+            imageInputStream = contentResolver.openInputStream(imageUri);
             Bitmap bitmap = BitmapFactory.decodeStream(imageInputStream, outPadding, options);
             maxSideLength = bitmap.getWidth() > bitmap.getHeight()
                     ? bitmap.getWidth(): bitmap.getHeight();
+
             double ratio = IMAGE_MAX_SIDE_LENGTH / (double) maxSideLength;
             if (ratio < 1) {
                 bitmap = Bitmap.createScaledBitmap(
@@ -103,7 +108,7 @@ public class ImageHelper {
                         false);
             }
 
-            return rotateBitmap(bitmap, getImageRotationAngle(imageUri, contentResolver));
+            return rotateBitmap(bitmap, getImageRotationAngle(imageUri, contentResolver)+90);
         } catch (Exception e) {
             return null;
         }
