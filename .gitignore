@@ -8,6 +8,11 @@
 # Java class files
 *.class
 
+# Package Files #
+*.jar
+*.war
+*.ear
+
 # Generated files
 bin/
 gen/
